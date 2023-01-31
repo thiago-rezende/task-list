@@ -2,15 +2,15 @@ name: CI
 
 on:
   push:
-    branches: ['main', 'develop']
+    branches: ["main", "develop"]
   pull_request:
-    branches: ['main', 'develop']
+    branches: ["main", "develop"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-        steps:
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -42,6 +42,6 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install
-      
+
       - name: Bulid Task List
         run: pnpm build
