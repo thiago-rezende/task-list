@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Task List</title>
+  </head>
+  <body class="h-screen flex items-center justify-center font-mono">
+    <main class="flex flex-col gap-2">
+      <h1 class="text-xl">Add Task</h1>
+      <form id="login" class="flex flex-col gap-2">
+        <input
+          id="text"
+          class="border-black border-2 p-2 text-center"
+          required
+          type="text"
+          name="text"
+          placeholder="task text"
+        />
+        <button
+          id="submit"
+          class="bg-black text-white p-2 flex justify-center"
+          type="submit"
+        >
+          Add Task
+        </button>
+      </form>
+      <div
+        id="message_success"
+        hidden
+        class="p-2 text-center border border-green-500 bg-green-200 text-green-800"
+      >
+        <p>Task Added!</p>
+      </div>
+      <div
+        id="message_error"
+        hidden
+        class="p-2 text-center border border-red-500 bg-red-200 text-red-800"
+      >
+        Failed to Add Task!
+      </div>
+      <div
+        id="message_success_update"
+        hidden
+        class="p-2 text-center border border-green-500 bg-green-200 text-green-800"
+      >
+        <p>Task Updated!</p>
+      </div>
+      <div
+        id="message_error_update"
+        hidden
+        class="p-2 text-center border border-amber-500 bg-amber-200 text-amber-800"
+      >
+        Failed to Update Task!
+      </div>
+      <div
+        id="message_success_delete"
+        hidden
+        class="p-2 text-center border border-amber-500 bg-amber-200 text-amber-800"
+      >
+        Task Deleted!
+      </div>
+      <div
+        id="message_error_delete"
+        hidden
+        class="p-2 text-center border border-red-500 bg-red-200 text-red-800"
+      >
+        Failed to Delete Task!
+      </div>
+      <hr class="h-px bg-black border-0" />
+      <h1 class="text-xl">Task List</h1>
+      <article id="tasks" class="flex flex-col gap-2"></article>
+    </main>
+  </body>
+  <script>
+    /* check if user is logged in */
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert(token);
+      window.location.href = "/login";
+      history.pushState(null, null, "/login");
+    }
+
+    /* environment */
+    const backend = "http://localhost:3000";
+
+    /* user tasks */
+    const tasks = [];
+
+    /* task list */
+    const tasksList = document.getElementById("tasks");
+
+    /* authorization request */
+    fetch(`${backend}/auth/me`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("invalid token");
+        }
+      })
+      .catch((err) => {
+        window.location.href = "/login";
+      });
+
+    /* get tasks request */
+    fetch(`${backend}/tasks`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("failed at task retrieval");
+        }
+
+        return res.json();
+      })
+      .then((userTasks) => {
+        /* update tasks array */
+        tasks.push(...userTasks);
+
+        /* fill tasks list */
+        for (const task of tasks) {
+          /* create task element */
+          const element = document.createElement("div");
+          element.classList.add(
+            "justify-between",
+            "border-black",
+            "text-center",
+            "border-2",
+            "flex",
+            "p-2"
+          );
+          element.innerHTML = `<p id="task-${task.id}" class="cursor-pointer ${
+            task.done ? "line-through" : ""
+          }" onclick="toggleTask(${task.id})">${
+            task.text
+          }</p><strong class="px-2 bg-black text-white cursor-pointer" onclick="deleteTask(${
+            task.id
+          })">&times;</strong>`;
+
+          /* update tasks list */
+          tasksList.appendChild(element);
+        }
+      });
+
+    /* assets loading */
+    const loader = new Image(24, 24);
+    loader.style.filter = "invert(100%)";
+    loader.classList.add("animate-spin");
+    loader.setAttribute(
+      "src",
+      "https://img.icons8.com/material-outlined/512/loading-sign.png"
+    );
+
+    /* form fields */
+    const text = document.getElementById("text");
+    const form = document.getElementById("login");
+    const submit = document.getElementById("submit");
+
+    /* status messages */
+    const messageError = document.getElementById("message_error");
+    const messageSuccess = document.getElementById("message_success");
+    const messageErrorUpdate = document.getElementById("message_error_update");
+    const messageSuccessUpdate = document.getElementById(
+      "message_success_update"
+    );
+    const messageErrorDelete = document.getElementById("message_error_delete");
+    const messageSuccessDelete = document.getElementById(
+      "message_success_delete"
+    );
+
+    /* prevent default form submit behaviour */
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+    });
+
+    /* login action */
+    submit.addEventListener("click", async (event) => {
+      /* reset messages */
+      messageError.hidden = true;
+      messageSuccess.hidden = true;
+      messageErrorUpdate.hidden = true;
+      messageSuccessUpdate.hidden = true;
+      messageErrorDelete.hidden = true;
+      messageSuccessDelete.hidden = true;
+
+      /* check form fields validity */
+      const isValid = form.checkValidity();
+
+      form.reportValidity();
+
+      /* proceed to task creation flow */
+      if (isValid) {
+        /* update submit button state */
+        submit.innerText = "";
+        submit.appendChild(loader);
+        submit.setAttribute("disabled", "true");
+
+        /* create task request */
+        fetch(`${backend}/tasks`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            task: { text: text.value, done: false },
+          }),
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("failed at task creation");
+            }
+
+            return res.json();
+          })
+          .then(({ task }) => {
+            /* show successe message */
+            messageSuccess.hidden = false;
+
+            /* update tasks array */
+            tasks.push(task);
+
+            /* create task element */
+            const element = document.createElement("div");
+            element.classList.add(
+              "justify-between",
+              "border-black",
+              "text-center",
+              "border-2",
+              "flex",
+              "p-2"
+            );
+            element.innerHTML = `<p id="task-${task.id}" class="cursor-pointer" onclick="toggleTask(${task.id})">${task.text}</p><strong class="px-2 bg-black text-white cursor-pointer" onclick="deleteTask(${task.id})">&times;</strong>`;
+
+            if (task.done) {
+              element.classList.add("line-through");
+            }
+
+            /* update tasks list */
+            tasksList.appendChild(element);
+          })
+          .catch((err) => {
+            console.log(err);
+
+            /* show error message */
+            messageError.hidden = false;
+          })
+          .finally(() => {
+            /* update submit button state */
+            submit.innerText = "Add Task";
+            submit.removeAttribute("disabled");
+          });
+      }
+    });
+
+    const deleteTask = (id) => {
+      /* reset messages */
+      messageError.hidden = true;
+      messageSuccess.hidden = true;
+      messageErrorUpdate.hidden = true;
+      messageSuccessUpdate.hidden = true;
+      messageErrorDelete.hidden = true;
+      messageSuccessDelete.hidden = true;
+
+      const taskToUpdate = tasks.filter((t) => t.id === id)[0];
+
+      if (!taskToUpdate) {
+        messageErrorUpdate.hidden = false;
+
+        return;
+      }
+
+      /* delete task request */
+      fetch(`${backend}/tasks/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("failed at task deletion");
+          }
+
+          /* show successe message */
+          messageSuccessDelete.hidden = false;
+
+          /* update tasks array */
+          const index = tasks.findIndex((t) => t.id === id);
+          tasks.splice(index, 1);
+
+          /* delete task element */
+          const element = document.getElementById(`task-${id}`);
+
+          if (element) {
+            element.parentElement.remove();
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          /* show error message */
+          messageErrorDelete.hidden = false;
+        })
+        .finally(() => {
+          /* update submit button state */
+          submit.innerText = "Add Task";
+          submit.removeAttribute("disabled");
+        });
+    };
+
+    const toggleTask = (id) => {
+      /* reset messages */
+      messageError.hidden = true;
+      messageSuccess.hidden = true;
+      messageErrorUpdate.hidden = true;
+      messageSuccessUpdate.hidden = true;
+      messageErrorDelete.hidden = true;
+      messageSuccessDelete.hidden = true;
+
+      const taskToUpdate = tasks.filter((t) => t.id === id)[0];
+
+      if (!taskToUpdate) {
+        messageErrorUpdate.hidden = false;
+
+        return;
+      }
+
+      /* patch task request */
+      fetch(`${backend}/tasks/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          task: { done: taskToUpdate.done ? false : true },
+        }),
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("failed at task patch");
+          }
+
+          return res.json();
+        })
+        .then(({ task }) => {
+          /* show successe message */
+          messageSuccessUpdate.hidden = false;
+
+          /* update tasks array */
+          tasks[tasks.findIndex((t) => t.id === task.id)].done = task.done;
+
+          /* create task element */
+          const element = document.getElementById(`task-${task.id}`);
+
+          if (task.done) {
+            element.classList.add("line-through");
+          } else {
+            element.classList.remove("line-through");
+          }
+        })
+        .catch((err) => {
+          /* show error message */
+          messageErrorUpdate.hidden = false;
+        })
+        .finally(() => {
+          /* update submit button state */
+          submit.innerText = "Add Task";
+          submit.removeAttribute("disabled");
+        });
+    };
+  </script>
+</html>

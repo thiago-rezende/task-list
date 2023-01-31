@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Task List | Login</title>
+  </head>
+  <body class="h-screen flex items-center justify-center font-mono">
+    <main class="flex flex-col gap-2">
+      <h1 class="text-xl">Log In</h1>
+      <form id="login" class="flex flex-col gap-2">
+        <input
+          id="email"
+          class="border-black border-2 p-2 text-center"
+          required
+          type="email"
+          name="email"
+          placeholder="user@domain.com"
+        />
+        <input
+          id="password"
+          class="border-black border-2 p-2 text-center"
+          required
+          type="password"
+          name="password"
+          placeholder="••••••••"
+        />
+        <button
+          id="submit"
+          class="bg-black text-white p-2 flex justify-center"
+          type="submit"
+        >
+          Log In
+        </button>
+      </form>
+      <a class="underline text-right" href="/register">register</a>
+      <div
+        id="message_success"
+        hidden
+        class="p-2 text-center border border-green-500 bg-green-200 text-green-800"
+      >
+        <p>Log In Succeeded!</p>
+      </div>
+      <div
+        id="message_error"
+        hidden
+        class="p-2 text-center border border-red-500 bg-red-200 text-red-800"
+      >
+        Wrong Credentials!
+      </div>
+    </main>
+  </body>
+  <script>
+    /* check if user is already logged in */
+    /* const token = localStorage.getItem("token"); */
+    /* if (token) { window.location.href = "/"; } */
+
+    /* assets loading */
+    const loader = new Image(24, 24);
+    loader.style.filter = "invert(100%)";
+    loader.classList.add("animate-spin");
+    loader.setAttribute(
+      "src",
+      "https://img.icons8.com/material-outlined/512/loading-sign.png"
+    );
+
+    /* environment */
+    const backend = "http://localhost:3000";
+
+    /* form fields */
+    const form = document.getElementById("login");
+    const email = document.getElementById("email");
+    const submit = document.getElementById("submit");
+    const password = document.getElementById("password");
+
+    /* status messages */
+    const messageError = document.getElementById("message_error");
+    const messageSuccess = document.getElementById("message_success");
+
+    /* prevent default form submit behaviour */
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+    });
+
+    /* login action */
+    submit.addEventListener("click", async (event) => {
+      /* reset messages */
+      messageError.hidden = true;
+      messageSuccess.hidden = true;
+
+      /* check form fields validity */
+      const isValid = form.checkValidity();
+
+      form.reportValidity();
+
+      /* proceed to athorization flow */
+      if (isValid) {
+        /* update submit button state */
+        submit.innerText = "";
+        submit.appendChild(loader);
+        submit.setAttribute("disabled", "true");
+
+        /* authorization request */
+        fetch(`${backend}/auth`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: { email: email.value, password: password.value },
+          }),
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("invalid credentials");
+            }
+
+            return res.json();
+          })
+          .then(({ token }) => {
+            /* show successe message */
+            messageSuccess.hidden = false;
+
+            /* update submit button state */
+            submit.innerText = "Redirecting to Home";
+
+            /* store token */
+            localStorage.setItem("token", token);
+
+            /* redirect to home */
+            window.location.href = "/";
+            history.pushState(null, null, "/");
+          })
+          .catch((err) => {
+            /* show error message */
+            messageError.hidden = false;
+
+            /* update submit button state */
+            submit.innerText = "Sign In";
+            submit.removeAttribute("disabled");
+          });
+      }
+    });
+  </script>
+</html>
