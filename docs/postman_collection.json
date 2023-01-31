@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "d97c0a30-fc4d-44fb-bfaf-18fb48806ce8",
-    "name": "Backend",
+    "name": "Task List",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -41,9 +41,22 @@
               }
             },
             "url": {
-              "raw": "{{backend-url}}/auth",
-              "host": ["{{backend-url}}"],
+              "raw": "{{task_list_url}}/auth",
+              "host": ["{{task_list_url}}"],
               "path": ["auth"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{task_list_url}}/auth/me",
+              "host": ["{{task_list_url}}"],
+              "path": ["auth", "me"]
             }
           },
           "response": []
@@ -89,8 +102,8 @@
               }
             },
             "url": {
-              "raw": "{{backend-url}}/users",
-              "host": ["{{backend-url}}"],
+              "raw": "{{task_list_url}}/users",
+              "host": ["{{task_list_url}}"],
               "path": ["users"]
             }
           },
@@ -102,8 +115,8 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{backend-url}}/users",
-              "host": ["{{backend-url}}"],
+              "raw": "{{task_list_url}}/users",
+              "host": ["{{task_list_url}}"],
               "path": ["users"]
             }
           },
@@ -144,8 +157,8 @@
               }
             },
             "url": {
-              "raw": "{{backend-url}}/tasks",
-              "host": ["{{backend-url}}"],
+              "raw": "{{task_list_url}}/tasks",
+              "host": ["{{task_list_url}}"],
               "path": ["tasks"]
             }
           },
@@ -157,8 +170,8 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{backend-url}}/tasks",
-              "host": ["{{backend-url}}"],
+              "raw": "{{task_list_url}}/tasks",
+              "host": ["{{task_list_url}}"],
               "path": ["tasks"]
             }
           },
@@ -179,8 +192,8 @@
               }
             },
             "url": {
-              "raw": "{{backend-url}}/tasks/:id",
-              "host": ["{{backend-url}}"],
+              "raw": "{{task_list_url}}/tasks/:id",
+              "host": ["{{task_list_url}}"],
               "path": ["tasks", ":id"],
               "variable": [
                 {
@@ -198,8 +211,8 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{backend-url}}/tasks/:id",
-              "host": ["{{backend-url}}"],
+              "raw": "{{task_list_url}}/tasks/:id",
+              "host": ["{{task_list_url}}"],
               "path": ["tasks", ":id"],
               "variable": [
                 {
@@ -242,7 +255,7 @@
   ],
   "variable": [
     {
-      "key": "backend-url",
+      "key": "task_list_url",
       "value": "http://localhost:3000",
       "type": "default"
     },
