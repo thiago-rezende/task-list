@@ -28,7 +28,7 @@ This project was developed as a study over [ExpressJS][express-url] and [Sequeli
 <!-- Badges -->
 
 [license-badge]: https://img.shields.io/badge/License-BSD_3_Clause-green.svg?style=flat-square
-[ci-badge]: https://img.shields.io/github/actions/workflow/status/thiago-rezende/thask-list/ci.yml?branch=main?label=CI&style=flat-square
+[ci-badge]: https://img.shields.io/github/actions/workflow/status/thiago-rezende/task-list/ci.yml?branch=main?label=CI&style=flat-square
 [node-badge]: https://img.shields.io/badge/Node-19-darkgreen.svg?style=flat-square
 [express-badge]: https://img.shields.io/badge/Express-4-blueviolet.svg?style=flat-square
 [sequelize-badge]: https://img.shields.io/badge/Sequelize-6-blue.svg?style=flat-square
