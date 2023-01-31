@@ -9,8 +9,16 @@
   </head>
   <body class="h-screen flex items-center justify-center font-mono">
     <main class="flex flex-col gap-2">
-      <h1 class="text-xl">Add Task</h1>
-      <form id="login" class="flex flex-col gap-2">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl">Add Task</h1>
+        <button
+          id="logout"
+          class="bg-white text-black px-2 py-1 border-2 border-black flex justify-center"
+        >
+          Log Out
+        </button>
+      </div>
+      <form id="add_tasks" class="flex flex-col gap-2">
         <input
           id="text"
           class="border-black border-2 p-2 text-center"
@@ -79,7 +87,6 @@
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert(token);
       window.location.href = "/login";
       history.pushState(null, null, "/login");
     }
@@ -165,7 +172,8 @@
 
     /* form fields */
     const text = document.getElementById("text");
-    const form = document.getElementById("login");
+    const form = document.getElementById("add_tasks");
+    const logout = document.getElementById("logout");
     const submit = document.getElementById("submit");
 
     /* status messages */
@@ -179,6 +187,18 @@
     const messageSuccessDelete = document.getElementById(
       "message_success_delete"
     );
+
+    /* logout button */
+    logout.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      /* remove token from local storage */
+      localStorage.clear("token");
+
+      /* redirect to login */
+      window.location.href = "/login";
+      history.pushState(null, null, "/login");
+    });
 
     /* prevent default form submit behaviour */
     form.addEventListener("submit", (event) => {
@@ -252,8 +272,6 @@
             tasksList.appendChild(element);
           })
           .catch((err) => {
-            console.log(err);
-
             /* show error message */
             messageError.hidden = false;
           })
@@ -310,7 +328,6 @@
           }
         })
         .catch((err) => {
-          console.log(err);
           /* show error message */
           messageErrorDelete.hidden = false;
         })
