@@ -6,11 +6,14 @@
   "author": "Thiago Rezende <thiago.manoel.rezende@gmail.com>",
   "scripts": {
     "start": "node index.js",
-    "serve": "serve --listen 8000 --config serve.json"
+    "start:bundle": "node dist/task-list.js",
+    "serve": "serve --listen 8000 --config serve.json",
+    "build": "esbuild index.js --bundle --minify --platform=node --outfile=dist/task-list.js"
   },
   "license": "BSD-3-Clause",
   "dependencies": {
     "cors": "^2.8.5",
+    "esbuild": "^0.17.5",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mariadb": "^3.0.2",

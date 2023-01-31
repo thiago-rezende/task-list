@@ -10,59 +10,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v3
+        steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Install NodeJS
         uses: actions/setup-node@v3
         with:
-          node-version: 18
-          cache: 'yarn'
+          node-version: 19
 
-      - name: Install Dependencies
-        run: yarn install
-
-      - name: Run Build
-        run: yarn build
-
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
         with:
-          node-version: 18
-          cache: 'yarn'
+          version: 7
+          run_install: false
 
-      - name: Install Dependencies
-        run: yarn install
+      - name: Get pnpm Store Directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-      - name: Generate Certificates
-        run: yarn keys:generate
-
-      - name: Run Tests
-        run: yarn test
-
-  lint:
-    needs: test
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+      - uses: actions/cache@v3
+        name: Setup pnpm Cache
         with:
-          node-version: 18
-          cache: 'yarn'
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install Dependencies
-        run: yarn install
-
-      - name: Run ESLint
-        run: yarn lint
+        run: pnpm install
+      
+      - name: Bulid Task List
+        run: pnpm build
